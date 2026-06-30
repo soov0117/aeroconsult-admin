@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>에어로컨설트</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * {
             margin: 0;
@@ -22,6 +23,161 @@
             color: white;
         }
 
+        /* 상단 로그인 버튼 */
+        .top-bar {
+            position: fixed;
+            top: 20px;
+            right: 24px;
+            z-index: 200;
+        }
+
+        .login-btn {
+            padding: 10px 24px;
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            color: white;
+            font-size: 0.95rem;
+            font-weight: 700;
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 50px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .login-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-email {
+            font-size: 0.9rem;
+            color: #a8d8f0;
+        }
+
+        .logout-btn {
+            padding: 8px 18px;
+            background: rgba(255,80,80,0.3);
+            color: white;
+            font-size: 0.85rem;
+            font-weight: 700;
+            border: 1px solid rgba(255,80,80,0.5);
+            border-radius: 50px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255,80,80,0.5);
+        }
+
+        /* 모달 */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(4px);
+            z-index: 300;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: #1a2a3a;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+
+        .modal h2 {
+            font-size: 1.6rem;
+            margin-bottom: 8px;
+        }
+
+        .modal p {
+            color: #a8d8f0;
+            font-size: 0.9rem;
+            margin-bottom: 28px;
+        }
+
+        .modal input {
+            width: 100%;
+            padding: 14px 16px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 10px;
+            color: white;
+            font-size: 1rem;
+            margin-bottom: 14px;
+            outline: none;
+            transition: border 0.2s;
+        }
+
+        .modal input::placeholder {
+            color: rgba(255,255,255,0.4);
+        }
+
+        .modal input:focus {
+            border-color: #4fa3d4;
+        }
+
+        .modal-submit {
+            width: 100%;
+            padding: 14px;
+            background: #4fa3d4;
+            color: white;
+            font-size: 1rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 4px;
+            transition: background 0.2s;
+        }
+
+        .modal-submit:hover {
+            background: #3a8bbf;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.4rem;
+            cursor: pointer;
+            opacity: 0.6;
+        }
+
+        .modal-close:hover {
+            opacity: 1;
+        }
+
+        .modal-error {
+            color: #ff6b6b;
+            font-size: 0.85rem;
+            margin-top: 10px;
+            text-align: center;
+            min-height: 20px;
+        }
+
+        .modal { position: relative; }
+
+        /* 히어로 */
         .hero {
             text-align: center;
             padding: 40px 20px;
@@ -111,6 +267,27 @@
     </style>
 </head>
 <body>
+
+    <!-- 상단 로그인 버튼 -->
+    <div class="top-bar">
+        <div id="authArea">
+            <button class="login-btn" onclick="openModal()">🔐 로그인</button>
+        </div>
+    </div>
+
+    <!-- 로그인 모달 -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <button class="modal-close" onclick="closeModal()">✕</button>
+            <h2>로그인 ✈️</h2>
+            <p>에어로컨설트 어드민에 오신 걸 환영합니다</p>
+            <input type="email" id="emailInput" placeholder="이메일" />
+            <input type="password" id="passwordInput" placeholder="비밀번호" />
+            <button class="modal-submit" onclick="handleLogin()">로그인</button>
+            <div class="modal-error" id="errorMsg"></div>
+        </div>
+    </div>
+
     <div class="hero">
         <h1>안녕하세요! 에어로컨설트입니다 ✈️</h1>
         <p>하늘을 향한 새로운 여정을 함께합니다.</p>
@@ -120,6 +297,7 @@
             alt="비행기가 하늘을 나는 사진"
         />
     </div>
+
     <div class="side-btns">
         <a class="side-btn" href="https://cafe.naver.com/f-e/cafes/31665166/menus/49?viewType=W" target="_blank">📅 수업일정</a>
         <a class="side-btn" href="https://talk.cafe.naver.com/cafes/31665166/channels" target="_blank">💬 상담</a>
@@ -128,5 +306,63 @@
     <div class="cafe-btn-wrap">
         <a class="cafe-btn" href="https://cafe.naver.com/aeroconsult" target="_blank">☕ 네이버 카페 가기</a>
     </div>
+
+    <script>
+        const supabase = window.supabase.createClient(
+            'https://oqtewqwiueyfrmikajwz.supabase.co',
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9xdGV3cXdpdWV5ZnJtaWthand6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4MjI4NjAsImV4cCI6MjA5ODM5ODg2MH0.3wv9PbLSOgdEzKJHkLkN6tlOD9JTjN_6wqgfgC16gqs'
+        );
+
+        function openModal() {
+            document.getElementById('modalOverlay').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('active');
+            document.getElementById('errorMsg').textContent = '';
+        }
+
+        async function handleLogin() {
+            const email = document.getElementById('emailInput').value;
+            const password = document.getElementById('passwordInput').value;
+            const errorMsg = document.getElementById('errorMsg');
+
+            errorMsg.textContent = '';
+
+            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+            if (error) {
+                errorMsg.textContent = '이메일 또는 비밀번호가 올바르지 않습니다.';
+                return;
+            }
+
+            closeModal();
+            updateAuthUI(data.user);
+        }
+
+        async function handleLogout() {
+            await supabase.auth.signOut();
+            document.getElementById('authArea').innerHTML = `<button class="login-btn" onclick="openModal()">🔐 로그인</button>`;
+        }
+
+        function updateAuthUI(user) {
+            document.getElementById('authArea').innerHTML = `
+                <div class="user-info">
+                    <span class="user-email">👤 ${user.email}</span>
+                    <button class="logout-btn" onclick="handleLogout()">로그아웃</button>
+                </div>
+            `;
+        }
+
+        // 페이지 로드시 로그인 상태 확인
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            if (session) updateAuthUI(session.user);
+        });
+
+        // 모달 바깥 클릭시 닫기
+        document.getElementById('modalOverlay').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+    </script>
 </body>
 </html>
