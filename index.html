@@ -54,6 +54,37 @@
             50% { transform: translateY(-12px); }
         }
 
+        .side-btns {
+            position: fixed;
+            right: 24px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            z-index: 100;
+        }
+
+        .side-btn {
+            display: block;
+            padding: 14px 20px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            color: white;
+            font-size: 1rem;
+            font-weight: 700;
+            text-decoration: none;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.3);
+            text-align: center;
+            transition: background 0.2s, transform 0.2s;
+        }
+
+        .side-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateX(-4px);
+        }
+
         .cafe-btn-wrap {
             width: 100%;
             text-align: center;
@@ -89,6 +120,11 @@
             alt="비행기가 하늘을 나는 사진"
         />
     </div>
+    <div class="side-btns">
+        <a class="side-btn" href="#">📅 수업일정</a>
+        <a class="side-btn" href="#">💬 상담</a>
+    </div>
+
     <div class="cafe-btn-wrap">
         <a class="cafe-btn" href="https://cafe.naver.com/aeroconsult" target="_blank">☕ 네이버 카페 가기</a>
     </div>
